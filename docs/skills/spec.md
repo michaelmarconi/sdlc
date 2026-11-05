@@ -89,8 +89,10 @@ Two things keep specs in this shape, and a third is planned:
 - **Review.** Before you see a spec, `/spec` has its reviewer agent check it against a short
   list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule,
   its scenarios add real cases, Verified by names a method, and the spec refers to no other spec,
-  nor the brief, an ADR or a plan, by hyperlink, path or title, since those can change without
-  the spec being touched and the reference would go stale. At the same time, a language checker
+  nor the brief, an ADR or a plan, nor any material outside the lifecycle's documents except a web
+  page, such as a requirements document you handed over, by hyperlink, path or title, since those
+  can change without the spec being touched and the reference would go stale. A plugin hook also
+  refuses any such hyperlink or path. At the same time, a language checker
   reads it for words a newcomer could not follow, by the
   [Plain words](../lifecycle.md#plain-words) rule: a term from your field gets a footnote, and
   team shorthand is rewritten. `/spec` corrects what both find, once, and has the corrections checked (see [Review process](../lifecycle.md#review-process));

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: spec-no-source-references
+expected_outcome: |
+  The person pastes a support ticket into the conversation and asks for a spec that refers to it. The spec states the ticket's need in its own words, refers to the ticket in no way, by hyperlink, path or number, and the reply tells the person the reference was left out because the ticket can change or vanish without the spec being touched.

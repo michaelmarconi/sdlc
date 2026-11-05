@@ -6,6 +6,26 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.25.0] - 2026-11-05
+
+### Changed
+
+- The brief, specs and ADRs now stand on their own. They refer to outside material only by a
+  web link, and never, by hyperlink, path or title, to material handed over in the conversation
+  (such as a requirements document, notes or a ticket), to anything outside the repository, or to
+  a file under `docs/` that is not a lifecycle document. What matters from such material is
+  stated in the document's own words. `/sdlc:brief`, `/sdlc:spec` and `/sdlc:adr` leave such a
+  reference out and say why, and their reviewers check for it.
+- The brief rubric's "Links back it" check is gone, so the brief reviewer no longer reads the
+  documents a brief links to. A brief that links to a file under `docs/` that is not a lifecycle
+  document fails its References check: restate what matters from that file in the brief.
+
+### Added
+
+- A hook refuses any edit that adds such a hyperlink or path to a brief, spec or ADR, and names
+  each one (ADR 0023). A reference the document already held is not refused again, so older
+  documents and decided ADRs can still be edited as the lifecycle allows.
+
 ## [0.24.3] - 2026-11-05
 
 ### Fixed

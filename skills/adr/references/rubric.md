@@ -34,10 +34,15 @@ checking, and quotes the ADR as evidence for every failure.
    number exists in `docs/adrs/`, and an ADR is `↪️ Superseded` only when its replacement is
    `👍 Accepted`, with both ends then naming each other. While the replacement is still
    `📝 Draft`, the ADR it replaces stays `👍 Accepted` with no `superseded-by:`; that passes.
-10. **References.** The ADR refers only to other ADRs, and names them by number. It does not
-    refer to a spec, the brief, a plan or a spike record in any way: no hyperlink, path or title;
-    a spike's measurements are stated in the ADR's own words. Those change
-    while an ADR does not, so the reference would go stale.
+10. **References.** Of the lifecycle's documents, the ADR refers only to other ADRs, and names them
+    by number. It does not refer to a spec, the brief, a plan or a spike record in any way: no
+    hyperlink, path or title; a spike's measurements are stated in the ADR's own words. Those
+    change while an ADR does not, so the reference would go stale. The ADR refers to outside
+    material only by a web link. It never refers, by hyperlink, path or title, to material handed
+    over in the conversation, to anything outside the repository, or to a file under `docs/` that
+    is not a brief, spec, ADR, plan or spike record: such material can change or vanish without the
+    ADR being touched, so what matters from it is stated in the ADR's own words. References to code
+    are not part of this check.
 11. **No overlap.** No other `📝 Draft` or `👍 Accepted` ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.
 12. **Accepted means settled.** A `👍 Accepted` or `↪️ Superseded` ADR has no open questions: its

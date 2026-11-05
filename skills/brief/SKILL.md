@@ -21,7 +21,7 @@ person is not asked to approve a command.
 The brief records what the person intends, which only they know. So draft from what they said in
 this conversation and from what they point you to, such as a document, a link or notes. If
 `docs/brief.md` exists, read it and change it rather than starting again; the documents it
-already links to count as pointed to. Don't read anything else on your own, not the README, the
+already links to on the web count as pointed to. Don't read anything else on your own, not the README, the
 code or a connected service: what a repository holds today can quietly pass for what the product
 is meant to be. If something would help, ask first ("There's a README here; shall I read it?")
 and read it only if they say yes.
@@ -33,12 +33,14 @@ fact they gave that the brief's sections hold, such as who does what; where the
 conversation changed its mind, the latest word wins. Only when there is nothing to draw on, ask
 what they are building and for whom first.
 
-Write only what they said or showed you, as rubric check 8 describes, and link each fact taken from
-a document to it, as check 9 does. What they haven't said becomes an open question, each asking one
+Write only what they said or showed you, as rubric check 8 describes. What they haven't said becomes an open question, each asking one
 thing: "What do they do today, and how long does it take?" is two questions. When they want the
 brief to refer to a spec, an ADR (architecture decision record), a plan or a spike record, by
-hyperlink, path or title, leave it out (check 10) and tell them why: that document can change or be deleted without the
-brief being touched, so the reference would go stale. When they mention something that belongs to a
+hyperlink, path or title, leave it out (check 9) and tell them why: that document can change or be deleted without the
+brief being touched, so the reference would go stale. Material they hand over that is not a web
+page, such as a requirements document or notes, is drawn on but never referred to (check 9): state
+what matters from it in the brief's own words, and tell them it can change or vanish without the
+brief being touched. When they mention something that belongs to a
 later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
 behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
 ADR, and one they have not becomes an open question.

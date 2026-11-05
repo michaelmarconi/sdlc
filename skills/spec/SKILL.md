@@ -58,7 +58,9 @@ make it an open question. When an unknown can only be settled by trying somethin
 spike: a throwaway experiment. When the person wants the spec to refer to the brief, another
 spec, an ADR, a plan or a spike record, by hyperlink, path or title, leave it out (rubric check 11) and tell them
 why: that document can change or be deleted without this spec being touched, so the reference
-would go stale.
+would go stale. Material they hand over that is not a web page, such as a requirements document or
+notes, is drawn on but never referred to (rubric check 11): state what matters from it in the
+spec's own words, and tell them it can change or vanish without the spec being touched.
 
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
 may not use the feature, what happens on an error, or what happens when a rule's condition does

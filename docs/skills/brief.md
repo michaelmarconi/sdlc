@@ -36,8 +36,10 @@ and are held to the same checks as the rest.
 
 The brief says only what you told `/brief` or showed it. Anything it does not know, or would
 otherwise have to assume, goes in Open questions, worded so you can answer or confirm it, such as
-"Is it right that support staff are the main users?". Where a fact comes from a document, the
-brief links to it.
+"Is it right that support staff are the main users?". Where a fact comes from a document you
+handed over, such as a requirements document or notes, the brief states it in its own words and
+does not refer to that document: it can change or vanish without the brief being touched. Only a
+web page may be linked.
 
 ## Using `/brief`
 
@@ -47,7 +49,7 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
   drafts from that, and where you changed your mind, the latest word wins. Only with nothing to go
   on does it ask what you are building first.
 - **Reads only what you point to.** The brief records what you intend, which only you know, so
-  `/brief` reads the documents and links you give it, the existing brief and the documents that
+  `/brief` reads the documents and links you give it, the existing brief and the web pages that
   brief links to, and nothing else. It does not search the
   repository, its README or a connected service on its own, because what a repository holds today
   can quietly pass for what the product is meant to be. If it thinks something would help, it asks
@@ -65,18 +67,18 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
 
 Before you see the brief, `/brief` has its reviewer agent check it against a short list of
 pass-or-fail checks: the sections are all there, it speaks for the whole product, the goals can
-be measured, nothing is guessed or chooses how to build it, and every statement that links to a
-document in the repository says no more than that document does. It also checks that the brief
-refers to no spec, ADR or plan, by hyperlink, path or title, since those can change without the
-brief being touched and the reference would go stale. The reviewer sees only the brief and the
-documents it links to, not your conversation, so it judges the page as a newcomer would. At
+be measured, nothing is guessed or chooses how to build it. It also checks that the brief refers to no spec,
+ADR or plan, nor to any material outside the lifecycle's documents except a web page, by
+hyperlink, path or title, since those can change without the brief being touched and the
+reference would go stale. A plugin hook also refuses any such hyperlink or path. The reviewer
+sees only the brief, not your conversation, so it judges the page as a newcomer would. At
 the same time, a language checker reads it for words a newcomer could not follow, by the
 [Plain words](../lifecycle.md#plain-words) rule: a term from your field gets a footnote, and
 team shorthand is rewritten. `/brief` corrects what both find, once, and has the corrections checked (see
 [Review process](../lifecycle.md#review-process)); then you get the brief with the reports.
 
-The reviewer cannot tell whether the brief matches what you said, only what it links to, so read
-the draft before you rely on it.
+The reviewer cannot tell whether the brief matches what you said or showed it, so read the draft
+before you rely on it.
 
 [^shapeup]: Ryan Singer, [Shape Up, chapter 6: Write the Pitch](https://basecamp.com/shapeup/1.5-chapter-06),
     Basecamp, 2019. We take its problem told before any solution, and its no-gos, things

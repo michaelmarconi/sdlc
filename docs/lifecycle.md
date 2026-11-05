@@ -117,6 +117,12 @@ flowchart LR
   any way, whether by hyperlink, path or title, because either end can change or be deleted
   without the other being touched, and the reference would quietly go stale. A spec or ADR that
   uses a spike's answer states its evidence in its own words.
+- **Documents stand on their own.** The brief, specs and ADRs refer to outside material only by a
+  web link. Material they were drafted from, such as a requirements document, notes or a ticket,
+  is stated in their own words, never referred to by hyperlink, path or title, when it was handed
+  over in a conversation, lives outside the repository or sits under `docs/` beside the
+  lifecycle's documents: it can change or vanish without them being touched, and `docs/` holds
+  only the lifecycle's documents. A plugin hook refuses such a hyperlink or path.
 - **No separate design document.** `👍 Accepted` ADRs and the code are the design.
 - **Every document carries its own status.** A plan holds nothing later work needs: a decision
   later work must follow is an ADR.

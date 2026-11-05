@@ -38,7 +38,10 @@ Nothing is moved or deleted once decided, so each file's status says whether it 
 replacement can share its subject with the ADR it replaces, as 0003 does, so the listing shows
 where a decision changed. The title inside each file states the decision itself, such as "Store
 sessions in Redis". ADRs refer to each other by number, never to specs, the brief or plans: those change
-while an ADR does not, so a reference to them would go stale.
+while an ADR does not, so a reference to them would go stale. Nor does an ADR refer to material
+you handed over, such as a requirements document or notes, or to anything outside the lifecycle's
+documents except a web page: it states what matters in its own words, and a plugin hook refuses
+any other hyperlink or path.
 
 ## Anatomy
 

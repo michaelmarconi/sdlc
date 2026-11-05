@@ -18,8 +18,6 @@ there, check nothing and report only `Document: <path>` and, on the next line, `
 Read:
 - The brief named on your request's first line, `Document: <path>`.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/brief/references/rubric.md`.
-- Each document in the repository that the brief links to, for check 9. List links outside the
-  repository under Not checked; they do not affect the result.
 - For the references check only, the title (first `# ` heading) of each file under `docs/specs/`,
   `docs/adrs/`, `docs/plans/` and `docs/spikes/`, so you can tell when the brief names one.
 
@@ -46,9 +44,6 @@ Other findings:
 
 Needs a person:
 - <a decision, with the options>
-
-Not checked:
-- <a link outside the repository>
 ```
 
 The result is PASS only when every check passes and nothing is left under Other findings. A

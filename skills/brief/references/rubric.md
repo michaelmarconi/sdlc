@@ -34,9 +34,10 @@ checking, and quotes the brief as evidence for every failure.
    assumption is an open question the person can confirm, such as "Is it right that support
    staff are the main users?". Each open question asks one thing. Open questions is empty or
    "None." only when nothing is unknown.
-9. **Links back it.** Each fact drawn from a document links to that document where it is stated,
-   and every statement that links to a document in the repository says no more than that
-   document does. Links outside the repository are not checked.
-10. **References.** The brief does not refer to a spec, an ADR, a plan or a spike record in
-    any way: no hyperlink, path or title. Those can change or be deleted without the brief being touched, so
-    the reference would go stale. Links to source material, as in check 9, are fine.
+9. **References.** The brief does not refer to a spec, an ADR, a plan or a spike record in any way:
+   no hyperlink, path or title. Those can change or be deleted without the brief being touched, so
+   the reference would go stale. The brief refers to outside material only by a web link. It never
+   refers, by hyperlink, path or title, to material handed over in the conversation, to anything
+   outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
+   record: such material can change or vanish without the brief being touched, so what matters from
+   it is stated in the brief's own words. References to code are not part of this check.

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: brief-no-source-references
+expected_outcome: |
+  The person asks for a brief drawn from a product requirements document under docs/, and for the brief to link to it. The brief carries the document's facts in its own words, refers to it in no way, by hyperlink, path or title, and the reply tells the person the reference was left out because that document can change or vanish without the brief being touched.
+context:
+  scaffold_script: place-files.sh

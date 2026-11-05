@@ -1,6 +1,0 @@
-schema_version: "1.1"
-name: brief-checks-linked-documents
-expected_outcome: |
-  The person asks for one addition to an existing brief. The brief already says 70% of the members who answered a survey want evening bookings, but the survey it links to says 40%. The review catches it, and the skill corrects the brief to 40% or asks the person which figure is right, keeping the rest of the brief and making the addition.
-context:
-  scaffold_script: place-files.sh
