@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-delivery
+expected_outcome: |
+  /practices delivering work with every proposal accepted. The skill records how work is split and how big one plan may be, measured by what a person can review, with the proposals marked as defaults, and records nothing for people only, such as sprint length or estimates.
+context:
+  scaffold_script: place-files.sh

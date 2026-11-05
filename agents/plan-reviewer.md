@@ -23,6 +23,9 @@ Read:
 - The frontmatter and Specs section of each other plan in `docs/plans/`, for the overlap check,
   and the title (first `# ` heading) of `docs/brief.md` and of each file in `docs/spikes/`, for
   the references check.
+- The `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever have one, and any file
+  under `docs/practices/` they name that bears on planning or splitting work, for the practices
+  check.
 - The code files the Plan section names, only to tell a new choice from a pattern the code
   already uses.
 
@@ -32,7 +35,8 @@ out, such as a step that contradicts a spec it lists. Other findings holds only 
 what you checked and found right. Leave out matters of style or taste. Keep
 apart the findings only a person can settle: under Needs a person goes a technical decision the
 Plan section makes that is missing from Decisions and ADRs, with the choice it makes and the
-alternative, and anything else only the person can decide, quoting the sentence it is about.
+alternative; a plan bigger than the practices allow, with the choice of splitting it or keeping it
+whole; and anything else only the person can decide, quoting the sentence it is about.
 Under Suggestions go the rubric's advice on the Plan section, where the plan does not follow it.
 
 Report in this shape:

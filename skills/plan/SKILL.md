@@ -36,6 +36,19 @@ the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
   `✅ Built` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.
 
+## Keep to the practices
+
+Before exploring, read the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever
+have one, and any file under `docs/practices/` they name that bears on planning or splitting work,
+whatever task its line names. Where they say how work is split or how big one plan may be, plan
+within that. If the work asked for is bigger, or exploring shows it is, say so, quoting the
+practice, propose how to split it into several plans that can each be built and reviewed on their
+own, and ask which to plan first. Ask this before any decision, since the decisions depend on
+what this plan covers. If the person keeps the work whole, give it a line under Decisions saying
+it was kept as one plan against the practice, quoting the practice, and the person's reason.
+Where the practices say neither, or there are none, plan as below. Never edit the practices from
+here: that belongs to `/practices`.
+
 ## Explore
 
 Read the specs, the ADRs and the code the work touches, changing nothing. Use Claude Code's
@@ -122,7 +135,8 @@ each round of corrections brings new mistakes.
    reports list: each failed check and each item under Other findings in the review report, and
    each finding in the wording report. A wording item under Needs a person, whose meaning only
    the person knows, is a decision like any other. A decision under Needs a person, such as a
-   technical choice the Plan section makes that is not under Decisions, becomes an entry in the
+   technical choice the Plan section makes that is not under Decisions, or whether to split a plan
+   bigger than the practices allow or keep it whole, becomes an entry in the
    plan's Open questions, never a guess at the answer: leave the text it concerns as it is. Leave
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was

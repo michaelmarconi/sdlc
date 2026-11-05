@@ -163,6 +163,16 @@ class Relay(unittest.TestCase):
         self.assertIn(os.path.join(ROOT, "skills", "plan", "references", "rubric.md"), prompt)
         self.assertIn("docs/specs/, docs/adrs/, docs/plans/", prompt)
 
+    def test_checker_of_a_plan_may_read_the_practices_it_keeps_to(self):
+        plan = "docs/plans/2026-10-29-x.md"
+        self.put(plan, "v1\n")
+        self.review(agent="sdlc:plan-reviewer", prompt=f"Document: {plan}\nReview this plan.")
+        self.put(plan, "v2\n")
+        prompt = self.assertAllowed(self.check(prompt=f"Document: {plan}\nCheck."))["prompt"]
+        files = prompt.split("=== FILES TO READ ===")[1]
+        for practices in ("AGENTS.md", "CLAUDE.md", "docs/practices/"):
+            self.assertIn(practices, files)
+
     def test_checker_of_a_spec_may_read_the_documents_a_reference_could_name(self):
         self.put(SPEC, "v1\n")
         self.review()

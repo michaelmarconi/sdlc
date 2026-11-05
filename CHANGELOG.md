@@ -6,6 +6,19 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.26.0] - 2026-11-05
+
+### Added
+
+- `/sdlc:practices` suggests a new topic, Delivering work: how work is split, how big one plan
+  may be, measured by what a person can review, how many finished builds may wait for review,
+  and what done means. It leaves out ways of working that exist for people rather than agents,
+  such as sprint length, estimates and pair programming. Branches and commits now also asks how
+  long a branch may live and how often it is merged back.
+- `/sdlc:plan` reads your practices. Where they say how work is split or how big one plan may be,
+  it plans within that; when the work is bigger, it proposes splitting it into several plans and
+  asks which to plan first. If you keep the work as one plan, the plan says why under Decisions,
+  and the plan's reviewer checks this.
 ## [0.24.3] - 2026-11-05
 
 ### Fixed

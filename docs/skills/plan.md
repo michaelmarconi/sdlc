@@ -140,15 +140,21 @@ plan mode, which explores before it writes a plan for you to approve,[^planmode]
 for settling decisions with you (see [Why not Claude Code's plan
 mode?](#why-not-claude-codes-plan-mode)):
 
-1. **Explore.** It reads the specs, the ADRs and the code, changing nothing, using Claude
+1. **Keep to your practices.** It reads your recorded [practices](practices.md). If they say how
+   work is split or how big one plan may be, such as "one plan per pull request", and the work you
+   asked for is bigger, it says so and proposes splitting it into several plans, each one that
+   can be built and reviewed on its own, and asks which to plan first. You can keep the work as
+   one plan instead; the plan then says why under Decisions. With no such practice, it plans the
+   work as you asked.[^batches]
+2. **Explore.** It reads the specs, the ADRs and the code, changing nothing, using Claude
    Code's built-in Explore and Plan helper agents. This is where it finds the decisions: choices
    with a reasonable alternative that the specs, the ADRs and the existing code don't already
    settle. Following a pattern the code already uses is not a decision.
-2. **Ask.** It tells you how many decisions there are and asks them one at a time, then waits
+3. **Ask.** It tells you how many decisions there are and asks them one at a time, then waits
    for your answer. Each question proposes an answer and where it belongs, with a reason for
    both: in this plan, if it matters only to this work, or in an ADR, if later work will have to
    follow it. If an answer adds or removes a decision, it says so and gives the new count.
-3. **Write.** Only when every decision is settled does it write the plan, with your decisions in
+4. **Write.** Only when every decision is settled does it write the plan, with your decisions in
    it. A decision that needs an ADR goes under Open questions until you have recorded it with
    `/adr` and accepted it; `/plan` never writes ADRs itself.
 
@@ -161,9 +167,10 @@ Before you see a plan, `/plan` has its reviewer agent check it against a short l
 checks: the fixed sections are there; every named requirement exists in its spec; the specs and
 ADRs are settled; no other plan that is not `✅ Built` names the same requirement; a plan that
 is `🟢 Ready to build` has no open questions; only specs and ADRs are referred to; the Plan section holds
-no code; and no decision is made in the Plan section that is missing from Decisions or ADRs. The
+no code; no decision is made in the Plan section that is missing from Decisions or ADRs; and the plan
+keeps to any size or way of splitting work your practices record, or says why not. The
 reviewer may suggest how to improve the Plan section itself, but those suggestions never hold a
-plan back. The reviewer sees only the plan and the documents it names, not your conversation, so it
+plan back. The reviewer sees only the plan, the documents it names and your practices, not your conversation, so it
 judges the page as a newcomer would. At the same time, a language checker reads it for words a
 newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. `/plan`
 corrects what both find, once, and has the
@@ -185,3 +192,9 @@ reasons found by trying it with Claude Code 2.1.312:
 [^planmode]: Claude Code documentation, [Analyze before you edit with plan mode](https://code.claude.com/docs/en/permission-modes).
     We take its order of work: explore and design with helper agents first, then write the plan for
     you to approve.
+
+[^batches]: Small plans follow DORA's research on [working in small
+    batches](https://dora.dev/capabilities/working-in-small-batches/), which finds that small
+    batches predict better delivery, matter more when AI writes the code because "large changes
+    are difficult to review, test, and integrate safely", and that "any batch of code that takes
+    longer than a week to complete and check is too big".

@@ -1,0 +1,22 @@
+[project]
+name = "booklog"
+version = "0.3.0"
+description = "Keep a log of the books you read, from the command line."
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+booklog = "booklog.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.3", "ruff>=0.7"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

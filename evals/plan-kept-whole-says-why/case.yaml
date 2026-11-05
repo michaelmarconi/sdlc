@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-kept-whole-says-why
+expected_outcome: |
+  The practices say one plan builds at most one requirement, but the person asks for both remaining requirements in one plan and says why. The skill writes one plan naming both requirements, with a line under Decisions saying it was kept whole against the practice and giving the person's reason.
+# Guard case for rubric check 11: when the person gives the reason in the request, Claude often
+# records it unaided; this catches a change to the skill that drops it.
+context:
+  scaffold_script: place-files.sh

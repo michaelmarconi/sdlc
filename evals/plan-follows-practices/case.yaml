@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-follows-practices
+expected_outcome: |
+  The practices in AGENTS.md say one plan builds at most one requirement, and the person asks for one plan covering two requirements. The skill says the work is bigger than the practice allows, quoting it, proposes splitting it into one plan per requirement, and asks which to plan first, writing no plan yet.
+context:
+  scaffold_script: place-files.sh

@@ -55,7 +55,7 @@ the `sdlc:` prefix.
   the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
   whenever you need it. Practices are not a lifecycle document and have no status: their essentials
   live in `AGENTS.md`, which Claude Code loads, and longer topics in `docs/practices/`. They are
-  written for agents, so every skill sees them, and `/build` follows them.
+  written for agents, so every skill sees them, and `/plan` and `/build` follow them.
 
 The steps fall into two phases, and the other skills belong to neither.
 
@@ -89,6 +89,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    Practices -.->|followed by| Plan
     Practices -.->|followed by| Build
     Code[Code on the main branch] -.-> Audit
     Audit -.->|drift| Spec

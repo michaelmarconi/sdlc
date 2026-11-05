@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-review-size
+expected_outcome: |
+  An existing plan names two requirements, while the practices say one plan builds at most one, and nothing in it says why. The review fails it for not keeping to the practices; since only the person can choose between splitting it and keeping it whole, the skill puts that choice in the plan's Open questions and tells the person.
+context:
+  scaffold_script: place-files.sh

@@ -21,6 +21,12 @@ not a practice: it is a technical decision, so it belongs in an [ADR](adr.md) (a
 decision record), where its reasons are kept and only you accept it. The practice then just says
 how to use what was chosen, such as the command that runs the tests.
 
+Because the agents doing the work follow them, the topics leave out ways of working that exist
+for people rather than agents, such as sprint length, estimates or pair programming. What
+carries over is how work is split and how big each piece may be: small pieces that each leave the
+product usable, sized by what a person can review, since reviewing an agent's work is now the
+slow step.[^batches]
+
 Like the brief, practices have no status. They are never built; they are corrected in place
 whenever the way you work changes, and git keeps the earlier versions.
 
@@ -107,7 +113,7 @@ will use.
   topic alone and stops, so a run is a short conversation. Run it on the same topic later to
   improve it: it starts from what is recorded and proposes changes.
 - **Its topics are suggestions, not a complete list.** The plugin offers common topics, such as
-  testing, continuous integration, security and releasing, each with the questions to ask and
+  testing, how work is delivered, continuous integration, security and releasing, each with the questions to ask and
   the choices most teams make. Any other topic works the same way: ask for one, such as "I want
   to define how decisions are approved", and `/practices` gives it a topic file and a line in the
   core. It says so as it
@@ -145,6 +151,7 @@ will use.
 
 `/build` follows your practices but never changes them. Where a practice is not recorded, it works
 it out from the repository and says what it assumed (see [`/build`](build.md)).
+[`/plan`](plan.md) keeps each plan to any size or way of splitting work they record.
 
 ## Review
 
@@ -166,3 +173,6 @@ every document (see [Review process](../lifecycle.md#review-process)).
 [^memory]: Claude Code documentation, [How Claude remembers your project](https://code.claude.com/docs/en/memory).
 [^agentsmd]: [AGENTS.md](https://agents.md/).
 [^check]: Claude Code documentation, [Best practices: give Claude a check to run](https://code.claude.com/docs/en/best-practices#give-claude-a-check-to-run).
+[^batches]: DORA's research on [working in small batches](https://dora.dev/capabilities/working-in-small-batches/)
+    finds that small batches predict better delivery, and matter more when AI writes the code,
+    since "large changes are difficult to review, test, and integrate safely".
