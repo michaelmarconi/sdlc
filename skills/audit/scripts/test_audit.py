@@ -585,5 +585,99 @@ class Window(Project):
             self.assertIn("Exit codes", done.stdout)
 
 
+class Report(Project):
+    """`start` and `report`: the audit's report file, with its agents' reports copied in."""
+
+    def setUp(self):
+        super().setUp()
+        self.data = os.path.join(self.tmp.name, "data")
+        self.put("docs/adrs/0001-cents.md", adr())
+        self.put("docs/specs/statement-import.spec.md", spec(status="📝 Draft", extra="See ../adrs/0001-cents.md.\n"))
+        sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "scripts"))
+        import audit_relay
+        self.relay = audit_relay
+
+    def keep(self, agent, document, kind, text):
+        path = self.relay.record_path(self.data, "s1")
+        record = self.relay.load(path)
+        self.relay.keep(record, {"agent": agent, "document": document, "kind": kind}, text)
+        self.relay.save(path, record)
+
+    def report(self, own="", *extra):
+        done = subprocess.run([sys.executable, SCRIPT, "report", "--data", self.data, "--session", "s1",
+                               "--now", NOW, *extra], input=own, capture_output=True, text=True,
+                              cwd=self.project, env={**os.environ, **GIT_ENV})
+        return done
+
+    def written(self, done):
+        self.assertEqual(done.returncode, 0, done.stderr)
+        line = done.stdout.splitlines()[0]
+        self.assertTrue(line.startswith("Report written: "), done.stdout)
+        with open(line[len("Report written: "):], encoding="utf-8") as f:
+            return line[len("Report written: "):], f.read()
+
+    def test_agents_reports_word_for_word_under_their_headings(self):
+        adr_path = os.path.join(os.path.realpath(self.project), "docs/adrs/0001-cents.md")
+        auditor = "Drift:\n1. \"amounts in cents\" vs `float(x)` at a.py:3\n"
+        self.keep("audit-picker", "", "", "Picked: docs/adrs/0001-cents.md")
+        self.keep("auditor", adr_path, "", auditor)
+        self.keep("audit-checker", adr_path, "AUDIT REPORT", "1. Confirmed")
+        self.keep("brief-checker", os.path.join(self.project, "docs/brief.md"), "", "Contradicts: none")
+        self.keep("audit-checker", adr_path, "BRIEF REPORT", "Rejected")
+        path, text = self.written(self.report("## Drift\n\n1. ADR 0001: correct the code.\n", "--scope", "all"))
+        self.assertTrue(path.endswith("2026-11-05-audit-all.md"))
+        drift = text[text.index("## Drift"):text.index("## Contradicts the brief")]
+        self.assertIn("1. ADR 0001: correct the code.", drift)
+        self.assertIn("### Auditor: docs/adrs/0001-cents.md\n\n" + auditor, drift)
+        self.assertIn("### Checker: docs/adrs/0001-cents.md\n\n1. Confirmed", drift)
+        brief = text[text.index("## Contradicts the brief"):text.index("## Problems with the documents")]
+        self.assertIn("Contradicts: none", brief)
+        self.assertIn("Rejected", brief)
+        checked = text[text.index("## Documents checked"):text.index("## Documents not checked")]
+        self.assertIn("Picked: docs/adrs/0001-cents.md", checked)
+
+    def test_documents_problems_written_by_the_script(self):
+        _, text = self.written(self.report("", "--scope", "all"))
+        problems = text[text.index("## Problems with the documents"):text.index("## Not built yet")]
+        self.assertIn("docs/specs/statement-import.spec.md: references:", problems)
+
+    def test_claude_names_corrections_beside_the_problems(self):
+        _, text = self.written(self.report("## Problems with the documents\n\nRemove the link.\n", "--scope", "all"))
+        problems = text[text.index("## Problems with the documents"):text.index("## Not built yet")]
+        self.assertIn("Remove the link.", problems)
+        self.assertIn("references:", problems)
+
+    def test_stopped_audit_adds_no_document_checks(self):
+        _, text = self.written(self.report("## Documents not checked\n\nNo commit 1234abcd.\n",
+                                           "--scope", "since 1234abcd", "--stopped"))
+        self.assertNotIn("references:", text)
+        self.assertIn("No commit 1234abcd.", text)
+
+    def test_scope_names(self):
+        path, _ = self.written(self.report("", "--scope", "last 7 days"))
+        self.assertTrue(path.endswith("2026-11-05-audit-last-7-days.md"))
+        path, _ = self.written(self.report("", "--scope", "docs/adrs/0001-cents.md"))
+        self.assertTrue(path.endswith("2026-11-05-audit-0001-cents.md"))
+
+    def test_report_clears_the_record(self):
+        self.keep("auditor", "x", "", "old")
+        self.written(self.report("", "--scope", "all"))
+        _, text = self.written(self.report("", "--scope", "all"))
+        self.assertNotIn("old", text)
+
+    def test_start_clears_the_record(self):
+        self.keep("auditor", "x", "", "left from an audit that stopped")
+        done = self.run_audit("start", "--data", self.data, "--session", "s1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        _, text = self.written(self.report("", "--scope", "all"))
+        self.assertNotIn("left from an audit", text)
+
+    def test_nothing_written_in_the_project(self):
+        self.init()
+        self.commit()
+        self.written(self.report("## Drift\n\nNone.\n", "--scope", "all"))
+        self.assertEqual(self.git("status", "--porcelain"), "")
+
+
 if __name__ == "__main__":
     unittest.main()

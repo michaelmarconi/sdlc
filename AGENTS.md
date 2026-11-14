@@ -201,7 +201,7 @@ agents/
   brief-checker.md     # /audit: checks accepted specs and ADRs against the brief
   audit-picker.md      # /audit: picks the documents a window of commits could affect
 hooks/
-  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay, the practices limits
+  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay, the audit report hook, the practices limits
 scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records

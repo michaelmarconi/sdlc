@@ -448,6 +448,66 @@ class Corrections(Relay):
         self.assertEqual(self.check()["permissionDecision"], "deny")
 
 
+class KeptForTheReport(Relay):
+    """The reviews and the correction check stay on record, for hand_over.py's report file (ADR 0034)."""
+
+    def checked(self, response):
+        self.all_reviews()
+        self.commit("Correct")
+        self.assertEqual(self.check()["permissionDecision"], "allow")
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "check",
+                   "tool_input": {"subagent_type": "agentic:build-correction-checker",
+                                  "prompt": f"Document: {PLAN}\nCheck the corrections."},
+                   "tool_response": response})
+
+    def kept(self, plan=PLAN):
+        return build_relay.kept_reports(os.path.join(self.tmp.name, "data"), "s1", plan, cwd=self.repo)
+
+    def test_reviews_and_check_kept_after_the_check(self):
+        self.checked({"content": [{"type": "text", "text": "Result: PASS\nall made"}]})
+        kept = self.kept()
+        self.assertEqual(kept["code"], '[{"summary": "code finding"}]')
+        self.assertEqual(kept["security"], "security finding")
+        self.assertEqual(kept["plan"], "Result: FAIL\nplan finding")
+        self.assertEqual(kept["check"], "Result: PASS\nall made")
+
+    def test_handed_back_check_kept(self):
+        self.checked({"handback": "send", "handbackReport": {"text": "Result: PASS"},
+                      "content": [{"type": "text", "text": "delivered as a message"}]})
+        self.assertEqual(self.kept()["check"], "Result: PASS")
+
+    def test_background_check_kept(self):
+        self.all_reviews()
+        self.commit("Correct")
+        tool_input = {"subagent_type": "agentic:build-correction-checker",
+                      "prompt": f"Document: {PLAN}\nCheck the corrections."}
+        self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "check",
+                   "tool_input": tool_input})
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "check",
+                   "tool_input": tool_input, "tool_response": {"status": "async_launched", "agentId": "c1"}})
+        self.hook({"hook_event_name": "SubagentStop", "agent_id": "c1",
+                   "agent_type": "agentic:build-correction-checker", "last_assistant_message": "Result: FAIL\nCHK-1"})
+        self.assertEqual(self.kept()["check"], "Result: FAIL\nCHK-1")
+        self.commit("Correct again")
+        self.assertEqual(self.check()["permissionDecision"], "deny")
+
+    def test_reviews_kept_without_a_check(self):
+        self.all_reviews()
+        kept = self.kept()
+        self.assertEqual(sorted(kept), ["code", "plan", "security"])
+
+    def test_another_plan_gets_nothing(self):
+        self.all_reviews()
+        self.assertIsNone(self.kept("docs/plans/2026-11-03-other.md"))
+
+    def test_plan_named_by_its_full_path_matches(self):
+        self.all_reviews()
+        self.assertIsNotNone(self.kept(os.path.join(self.repo, PLAN)))
+
+    def test_no_record_gets_nothing(self):
+        self.assertIsNone(self.kept())
+
+
 class LeftAlone(Relay):
     def test_reviews_outside_a_build_not_kept(self):
         fresh_session.save("s2", {"fresh": True, "messages": 1})

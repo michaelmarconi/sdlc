@@ -82,7 +82,7 @@ anything, `/build` checks:
 - **Your practices, if any.** `/build` looks for the `## Practices` heading, and reads any file
   it names to read before a task like this. None is required:
   where a practice it needs is not recorded, such as how to run the tests, it works it out from
-  your repository and carries on, and its summary says what it assumed and suggests `/practices`
+  your repository and carries on, and its report says what it assumed and suggests `/practices`
   to record it.
 - **It is on a branch of its own, with nothing left uncommitted.** `/build` never builds on your
   repository's default branch. If you are on it, it makes a branch named as your practices say,
@@ -100,7 +100,7 @@ anything, `/build` checks:
   which a setting can turn off. If either is not, `/build` stops and says which, so every build
   gets all three reviews.
 
-Finally, it runs your tests once. Any test that already fails is noted for the summary, and
+Finally, it runs your tests once. Any test that already fails is noted for the report, and
 `/build` does not try to fix it.
 
 ## Building
@@ -116,7 +116,7 @@ Two rules hold throughout:
 
 - **A test is never weakened to make the code pass.** `/build` changes a test only to make it
   check its example more closely, or to correct an expected value that plainly contradicts the
-  spec, such as a typo, which its summary then points out.
+  spec, such as a typo, which its report then points out.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts, `/build`
   stops and hands over with the failure written down, rather than keep retrying an approach that fails.
   Anthropic gives the same advice: after two failed corrections, start again rather than try a
@@ -142,12 +142,12 @@ To raise one, `/build` stops and hands over with the question written down. It n
 guess can carry a long build down the wrong path before anyone looks.[^assumption]
 
 Every other choice, such as names, how the code is split up, which helper to use, the wording of
-an error message or an exit code, `/build` makes itself and carries on, and the summary lists
+an error message or an exit code, `/build` makes itself and carries on, and the report lists
 each one with its reason, so you can see what was decided for you.
 
 `/build` leans towards correcting rather than asking. Anything plainly wrong, such as a crash
 when no file name is given or an error reported in the wrong place, it corrects whether or not a
-spec mentions it, with a test where it can, and lists each correction in its summary so you can
+spec mentions it, with a test where it can, and lists each correction in its report so you can
 add it to the spec. Stopping a build to ask about something obvious costs more than a small
 overstep. It raises the case with you only when what should happen instead is a real product
 choice that a reasonable person could want made differently.
@@ -172,7 +172,7 @@ seen the conversation:
 
 A reviewer asked to find problems will always find something, so the reviews pass once every bug
 or security hole they report has been corrected. Findings about tidiness or style are listed in the
-summary but do not stop the plan being marked `✅ Built`.[^specreview]
+report but do not stop the plan being marked `✅ Built`.[^specreview]
 
 `/build` corrects what the reviews find, once, and has the corrections checked, the same way
 documents are reviewed (see [Review process](../lifecycle.md#review-process)). It then runs your
@@ -193,14 +193,26 @@ you: with Claude directly, by changing a spec or ADR, or by deciding a finding i
 `/build` on the branch. It resumes, reviews again, and marks the plan `✅ Built` once every review
 passes. If you think a finding is wrong, say so when you rerun it.
 
-It ends with a short summary:
+It ends with a short reply: the outcome, the branch, whether the plan was marked `✅ Built`, any
+question for you, and the full path of the build's report file. Where the app you run Claude Code
+in can show you a file, the report opens there. The file is Markdown, kept outside your repository
+in the plugin's data folder, under `reports/<repository>/`, named by date and plan; where that
+folder can't be written, it goes in a private folder in your system's temporary folder
+instead, until you delete it. It holds:
 
 - what was built, or why it stopped and what is open;
+- for a build before sign-off, what was not signed off and the answers it built on;
 - the test and lint commands it ran, with their output, and any tests that were failing before it
   started;
-- the decisions it made for you, each with its reason;
-- what the reviews found, and what was corrected;
-- a reminder to verify the work before merging.
+- the decisions it made for you, each with its reason, and any defects it corrected that no spec
+  mentions;
+- what it corrected for each review;
+- each review's report and the correction check's report, and the hand-over script's own report,
+  copied in by the script word for word, so you read them exactly as they were given;
+- what is left for you to check, and a reminder to verify the work before merging.
+
+A build that refuses to start, such as on a plan that is already built, writes no file: its reply
+says why.
 
 ## After a build
 

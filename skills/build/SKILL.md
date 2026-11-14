@@ -15,7 +15,7 @@ These hold from the first step to the last, however long the build runs.
 
 - **Never weaken a test to make code pass.** Change a test only to make it check its example
   more closely. A test whose expected value plainly contradicts its example in the spec, such as
-  a typo, may be corrected to the spec's value: say so in the summary. A test that cannot pass as
+  a typo, may be corrected to the spec's value: say so in the report. A test that cannot pass as
   its example is worded is a finding to raise, not a test to loosen, skip or delete.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts at the
   code, stop and hand over with the failure written down. A third attempt at an approach that
@@ -33,16 +33,16 @@ These hold from the first step to the last, however long the build runs.
   A guess can carry a long build down the wrong path before anyone looks.
   Names, how the code is split up and which helper to use are yours, and so are the wording of
   error messages, exit codes and sensible handling of odd input: make each such choice, carry
-  on, and note it with its reason for the summary.
+  on, and note it with its reason for the report.
 - **Correct obvious defects without asking.** Anything plainly wrong is yours to correct, whether
   or not a spec mentions it: a crash or unhandled error, bad input such as a missing argument or
   an unreadable file that is not refused plainly, an error reported in the wrong place, a resource
   left open. Refuse bad input in the way the code around it already reports errors, add a test
-  for each correction where you can, and list each one in the summary. Lean towards correcting:
+  for each correction where you can, and list each one in the report. Lean towards correcting:
   stopping a build to ask about something obvious costs more than a small overstep. Raise only a
   real product choice, where a reasonable person could want something else, such as accepting
   the input in some new way or adding an option. If you would recommend one answer to a question
-  you are about to raise, and it is easy to change later, take it, list it in the summary, and
+  you are about to raise, and it is easy to change later, take it, list it in the report, and
   carry on.
 - **Never commit on the default branch, and never open a pull request or merge.** A plugin hook
   refuses a commit or push to the default branch while you build.
@@ -71,7 +71,7 @@ Check each of these before changing anything, and stop with the reason if one fa
    testing or committing, whatever task its line names. No practice is required: where one you
    need is not recorded, such as how to run the tests or the linters, work it out from the
    repository, from its README, build files and existing tests, and carry on. Never stop for
-   this. Note each assumption for the summary, and suggest `/practices` there to record them.
+   this. Note each assumption for the report, and suggest `/practices` there to record them.
 5. **The branch is right and clean.** The repository needs a remote named `origin` whose default
    branch is known: `git symbolic-ref refs/remotes/origin/HEAD` names it. If there is no
    `origin`, ask the person to add one. If `origin/HEAD` is not set, ask them to run
@@ -89,7 +89,7 @@ Check each of these before changing anything, and stop with the reason if one fa
 7. **The plan is signed off, or the person chooses to build anyway.** If it is not, ask as
    [If the plan is not signed off](#if-the-plan-is-not-signed-off) says.
 
-Then run the tests once. Note any that already fail for the summary, and do not try to fix them.
+Then run the tests once. Note any that already fail for the report, and do not try to fix them.
 
 ### If the plan is not signed off
 
@@ -138,7 +138,7 @@ suggests. For each requirement:
    new code breaks something already built. Commit.
 
 A requirement whose How we'll check names a demonstration needs no test: build it, and list it
-in the summary as left for the person to check. Commit with plain messages that say what changed,
+in the report as left for the person to check. Commit with plain messages that say what changed,
 and nothing about the build itself, apart from the record of a build before sign-off.
 
 ## Review
@@ -176,7 +176,7 @@ correction check use the right one whatever folder you started in.
 
 The reviews pass when the code and security reviews report no bug or security hole and the
 build reviewer's result is PASS. Findings about tidiness or style never stop a build: list them
-in the summary.
+in the report.
 
 1. **Correct, once.** If a review found anything, read the rubric again and correct only the
    bugs, the security holes, and each failed check and item under Other findings in the build
@@ -196,11 +196,36 @@ in the summary.
 
 ## Handing over
 
-However the build ends, hand over with the script, which commits anything left, pushes the branch
-to `origin`, and reports exactly what happened:
+However the build ends once it has started, hand over with the script, which commits anything
+left, pushes the branch to `origin`, reports exactly what happened, and writes the build's report
+file. It copies each review's report and its own report into the file word for word, so the person
+reads them exactly as they were given; you write only your own sections, as Markdown under these
+`##` headings, in this order, leaving out any you have nothing for:
+
+1. `## What was built`: what was built, or why the build stopped and what is open, with any
+   question to raise asked plainly.
+2. `## Built before sign-off`: for a build before sign-off, what was not signed off and the
+   proposed answers built, with a suggestion to settle them and sign the plan off.
+3. `## Tests and lint`: the test and lint commands you ran, with their final output, and any tests
+   that failed before you started.
+4. `## Choices`: each choice you made, with its reason, and each practice you had to work out from
+   the repository, with a suggestion to record it with `/practices`.
+5. `## Defects corrected`: each defect you corrected that no spec mentions, so the person can add
+   it to the spec.
+6. `## What each review found`: what you corrected for each review; the reviews' and the
+   correction check's reports are added for you.
+7. `## Left for you to check`: each requirement left for the person to check, and a reminder to
+   verify the work, for example with Claude Code's `/verify`, before merging.
+
+The script's own report goes under a heading of its own, which only the script writes. Give your
+sections to the script on standard input:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" [--reviews-passed]
+python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" [--reviews-passed] --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" --report - <<'EOF'
+## What was built
+
+...
+EOF
 ```
 
 Pass `--reviews-passed` only for a plan that was signed off when the build began, and only when
@@ -210,18 +235,7 @@ case the plan keeps its status, and the person sorts out what is open, then runs
 the branch. A plan built before sign-off stays as it was; once the person settles it and signs it
 off, `/build` on the branch can mark it `✅ Built`.
 
-End with a short summary for the person:
+The script prints what happened, then the report file's path and the file as written. If it refuses
+your sections, correct them and run it again. Never write or edit the file yourself.
 
-- what was built, or why the build stopped and what is open, with any question to raise asked
-  plainly;
-- for a build before sign-off, what was not signed off and the proposed answers built, with a
-  suggestion to settle them and sign the plan off;
-- the test and lint commands you ran, with their final output, and any tests that failed before
-  you started;
-- each choice you made, with its reason, and each practice you had to work out from the
-  repository, with a suggestion to record it with `/practices`;
-- each defect you corrected that no spec mentions, so the person can add it to the spec;
-- what each review found, and what was corrected;
-- the script's report, word for word;
-- each requirement left for the person to check, and a reminder to verify the work, for example
-  with Claude Code's `/verify`, before merging.
+End with a reply of a few lines, under 150 words: the outcome in a sentence or two, any question for the person and the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report into the reply or list its findings there, since the file holds them. Name the branch, and say whether the plan was marked `✅ Built`.

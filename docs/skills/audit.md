@@ -140,7 +140,7 @@ give the window.
 
 If Claude Code doesn't let it run the script, as can happen in a routine whose permissions don't
 allow it, the run stops and says so, since without the script it can't tell which documents to
-check.
+check. In each of these cases it writes no report file: its reply says why.
 
 When there is nothing to check, it says so: no lifecycle documents at all, none accepted, or no
 changes in the window. The document checks still run in the last two cases.
@@ -173,15 +173,21 @@ the skill that makes it:
 - **Supersede the ADR**, through [`/adr`](adr.md), when the decision no longer holds;
 - for a problem with a document, the edit that corrects it.
 
-Findings appear in the session that ran the audit; for a routine, that is the routine's own
-session.
+The full report goes in a Markdown file, and Claude's reply is a few lines: the outcome, any
+question for you, and the file's full path. The app shows you the file where it can. The file
+holds Claude's sections, such as each finding with its suggested correction, and every agent's
+report copied in word for word by the audit's script, so you read each finding exactly as its agent
+gave it, quotes included. It is kept in the plugin's own data folder, outside your repository, at
+`reports/<repository>/<date>-audit-<scope>.md`, until you delete it; where that folder can't be
+written, it goes in a private folder in your system's temporary folder instead. For a routine, the reply is in
+the routine's own session.
 
 `/audit` changes nothing in your repository: no file, no status, no commit, just as Spec Kit's analysis step only
 offers its corrections and never makes them.[^speckit] It writes no document, so its findings are
 checked as described above rather than corrected. To delete a plan or spike record it listed, ask
 Claude in the same session. If your project wants more done with the findings, such as filing
 each one as an issue, record that in your [practices](practices.md): Claude follows them in the
-session once `/audit` has reported.
+session once `/audit` has replied.
 
 [^fitness]: Neal Ford, Rebecca Parsons and Patrick Kua, *Building Evolutionary Architectures*,
     [chapter 2, Fitness Functions](https://oreilly.com/library/view/building-evolutionary-architectures/9781491986356/ch02.html).

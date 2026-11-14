@@ -37,6 +37,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   the person's own choice, asked the same way every time, and BUILD_PATH_RULE, so its reviews are
   given the plan's full path, which the build review relay hook finds the repository from
   (docs/adrs/0032).
+- /build and /audit (REPORT_SKILLS) hold REPORT_RULE word for word, so both end with a short reply
+  naming their report file, shown the same way (docs/adrs/0033).
 
 For each skills/<folder>/references/rubric.md and each agents/<name>.md, no check counts
 sentences or the words in a sentence, such as "sentences under 25 words" or "at most three
@@ -185,6 +187,13 @@ BUILD_PATH_RULE = (
     "repository from it, so the reviews and the correction check use the right one whatever "
     "folder you started in."
 )
+REPORT_RULE = (
+    "End with a reply of a few lines, under 150 words: the outcome in a sentence or two, any question "
+    "for the person and the report file's full path; if the app you run in can show them a file in a "
+    "viewer, show the report file there; never paste the report into the reply or list its findings "
+    "there, since the file holds them."
+)
+REPORT_SKILLS = ("audit", "build")
 SHOW_RULE = (
     "Show the person each document you wrote or changed: if the app you run in can show them a "
     "file in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; "
@@ -293,6 +302,9 @@ def problems(folder, text):
     if folder in STATUS_SKILLS and not holds(body, DATE_RULE):
         found.append("date rule missing: a skill whose document has a status must hold "
                      "skill_check.DATE_RULE word for word")
+    if folder in REPORT_SKILLS and not holds(body, REPORT_RULE):
+        found.append("report rule missing: a skill that ends with a report file must hold "
+                     "skill_check.REPORT_RULE word for word (ADR 0033)")
     if folder == "build" and not holds(body, BUILD_ASK_RULE):
         found.append("build-anyway rule missing: /build must hold skill_check.BUILD_ASK_RULE word "
                      "for word")

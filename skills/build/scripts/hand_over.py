@@ -11,13 +11,20 @@
    `date:`, the day its status last changed, to today's date on this machine, adding the line under
    the status if the plan has none, changing nothing else in the file, and commits that on its own. It writes the file itself, so the
    status hook, which refuses `✅ Built` from Claude, never sees it;
-4. pushes the branch to `origin`.
+4. pushes the branch to `origin`;
+5. writes the build's report file (docs/adrs/0033 and 0034) with scripts/run_report.py, outside the
+   repository, even when it refused to start: Claude's own sections, read from stdin under the
+   report's `## ` headings, then the four reports build_relay.py kept for this plan in this session
+   (code review, security review, build review and correction check, each "No report kept." when
+   there is none) and this script's own lines, word for word. Sections it can't use, such as one
+   under a heading the report doesn't have, stop it before any step, changing nothing.
 
-It prints what happened, one line per step, for Claude to pass on word for word.
+It prints what happened, one line per step, then the report file's path and the file as written.
 
-Exit codes: 0 when every step that applied succeeded; 1 when a commit or push failed, or
---reviews-passed was given for a plan that is not `🟢 Ready to build` (the plan is then left as it
-is, and the rest still runs); 2 when it refused to start, changing nothing.
+Exit codes: 0 when every step that applied succeeded; 1 when a commit, the push or the report
+file failed, or --reviews-passed was given for a plan that is not `🟢 Ready to build` (the plan is then left as it
+is, and the rest still runs); 2 when it refused to start or could not use Claude's sections,
+changing nothing in the repository.
 """
 
 import argparse
@@ -29,6 +36,13 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import uncommitted  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
+import build_relay  # noqa: E402
+import run_report  # noqa: E402
+
+REVIEWS = (("Code review", "code"), ("Security review", "security"), ("Build review", "plan"),
+           ("Correction check", "check"))
+NO_REPORT = "No report kept."
 
 READY, BUILT = "🟢 Ready to build", "✅ Built"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
@@ -185,9 +199,31 @@ def main(argv=None):
     parser.add_argument("--reviews-passed", action="store_true",
                         help="every review of the build passed, so mark the plan Built")
     parser.add_argument("--repo", default=".", help="the repository (default: the current directory)")
+    parser.add_argument("--report", required=True, choices=["-"],
+                        help="`-`: read your own sections of the build's report from stdin, as Markdown "
+                             "under the report's `## ` headings")
+    parser.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
+    parser.add_argument("--session", required=True, help='the session\'s id: "${CLAUDE_SESSION_ID}"')
     args = parser.parse_args(argv)
-    code, lines = hand_over(os.path.abspath(args.repo), args.plan, args.message, args.reviews_passed)
-    print("\n".join(lines))
+    repo = os.path.abspath(args.repo)
+    try:
+        own = run_report.parse("build", sys.stdin.read())
+    except run_report.ReportError as error:
+        print(f"Refused: your report's sections can't be used: {error}. Nothing was changed; correct "
+              "them and hand over again.")
+        return 2
+    code, lines = hand_over(repo, args.plan, args.message, args.reviews_passed)
+    kept = build_relay.kept_reports(args.data, args.session, args.plan, cwd=repo) or {}
+    copied = {"What each review found": [(title, kept.get(part) or NO_REPORT) for title, part in REVIEWS],
+              "The hand-over script's report": [("Output", "\n".join(lines))]}
+    name = os.path.splitext(os.path.basename(args.plan))[0]
+    try:
+        _, report = run_report.write("build", name, repo, args.data, own, copied, date=today())
+        build_relay.clear(args.data, args.session)
+    except run_report.ReportError as error:
+        report = [f"Report not written: {error}"]
+        code = max(code, 1)
+    print("\n".join(lines + [""] + report))
     return code
 
 
