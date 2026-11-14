@@ -6,6 +6,25 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.51.0] - 2026-11-14
+
+### Changed
+
+- `/build` and `/audit` now hand back their full report as a Markdown file, beside a reply of a
+  few lines naming it, instead of a long summary in the conversation
+  ([#85](https://github.com/michaelmarconi/agentic-engineering/issues/85), ADRs 0033 and 0034).
+  The file is kept in the plugin's data folder, under `reports/<repository>/`, or in a private
+  folder in the system's temporary folder where that can't be written, and is shown in the app's
+  file viewer where there is one.
+- A script writes the file: Claude gives it only its own sections, and the script copies in, word
+  for word, the hand-over script's output, the build's three review reports and the correction
+  check's report, or each audit agent's report. A build that refuses before it starts, or an
+  audit that stops before its first agent starts, writes no file: the reply says why.
+- A new hook, `scripts/audit_relay.py`, keeps the audit agents' reports for the file, and the
+  build's hook now keeps the review reports until the hand-over.
+- `audit.py` has two new commands, `start` and `report`, and `hand_over.py` takes `--report`,
+  `--data` and `--session`.
+
 ## [0.50.0] - 2026-11-14
 
 ### Fixed
