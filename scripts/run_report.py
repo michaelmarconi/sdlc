@@ -12,6 +12,10 @@ data folder. When that folder is empty or can't be written, as in the plugin's o
 file goes in `agentic-reports-<user id>` in the system's temporary folder instead, which only this
 user can open, and the lines printed for Claude say so. A second report of the same name on the
 same day gets `-2`, `-3` and so on: no report is ever overwritten, and none is deleted.
+
+The lines printed for Claude give the file's path first, then the headings, each copied report's
+length, and the file as written, between fixed `===` lines, so the run's own record shows exactly
+what the person will read.
 """
 
 import os
@@ -173,4 +177,5 @@ def write(kind, name, repository, data, own, copied, date):
     for heading in HEADINGS[kind]:
         for title, body in copied.get(heading, []):
             lines.append(f"Copied: {title} ({len(body)} characters)")
+    lines += ["", "=== THE REPORT AS WRITTEN ===", text.rstrip("\n"), "=== END OF THE REPORT ==="]
     return path, lines

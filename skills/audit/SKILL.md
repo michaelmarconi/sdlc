@@ -164,7 +164,8 @@ this order, leaving out any you have nothing for:
 10. `## Rejected findings`: each, briefly, with the checker's reason.
 
 Give your sections to the script on standard input, with `--scope` set to `all`, the window's
-words, or the named document's path:
+words, or the named document's path, and `--stopped` added when the audit stopped for a reason
+above, so no document checks are added:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" <<'EOF'
@@ -174,7 +175,7 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --data "
 EOF
 ```
 
-It prints the file's path first. If it refuses a heading, correct your sections and run it again.
+It prints the file's path first, then the file as written. If it refuses a heading, correct your sections and run it again.
 Never write or edit the file yourself.
 
 Name a suggested correction, and the skill that makes it, for each drift finding, each

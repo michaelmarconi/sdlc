@@ -647,6 +647,12 @@ class Report(Project):
         self.assertIn("Remove the link.", problems)
         self.assertIn("references:", problems)
 
+    def test_stopped_audit_adds_no_document_checks(self):
+        _, text = self.written(self.report("## Documents not checked\n\nNo commit 1234abcd.\n",
+                                           "--scope", "since 1234abcd", "--stopped"))
+        self.assertNotIn("references:", text)
+        self.assertIn("No commit 1234abcd.", text)
+
     def test_scope_names(self):
         path, _ = self.written(self.report("", "--scope", "last 7 days"))
         self.assertTrue(path.endswith("2026-11-05-audit-last-7-days.md"))

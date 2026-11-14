@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-report-file
+expected_outcome: |
+  The audit clears what an earlier audit left, writes its report with the audit script, outside
+  the repository, and replies in a few lines naming the file's full path.
+context:
+  scaffold_script: place-files.sh

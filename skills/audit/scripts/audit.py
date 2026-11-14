@@ -81,7 +81,8 @@ report --scope <what was audited> --data <folder> --session <id>
     under "Documents checked", each auditor's and its checker's under "Drift", the brief checker's
     and its checkers' under "Contradicts the brief", and the problems `documents` finds under
     "Problems with the documents", beside the correction Claude names for each. `--scope` is `all`, the window's
-    words, or the named document's path. Prints the file's path first, then each heading and each
+    words, or the named document's path; `--stopped`, for an audit that stopped before checking
+    anything, adds no document checks. Prints the file's path first, then each heading and each
     copied report with its length.
 
 documents and window print JSON on stdout; start and report print plain lines.
@@ -471,12 +472,12 @@ def copied_reports(project, kept, problems):
     return copied
 
 
-def report(project, scope, data, session, own_text, now):
+def report(project, scope, data, session, own_text, now, stopped=False):
     project = os.path.realpath(project)
     try:
         own = run_report.parse("audit", own_text)
         copied = copied_reports(project, audit_relay.reports(data, session),
-                                check_documents(project)["problems"])
+                                [] if stopped else check_documents(project)["problems"])
         _, lines = run_report.write("audit", scope_name(scope), project, data, own, copied,
                                     date=now.date().isoformat())
     except run_report.ReportError as error:
@@ -615,6 +616,8 @@ def main(argv=None):
                     "1 refused, such as for a heading the report does not have, with the reason on stderr.")
     report_parser.add_argument("--scope", required=True,
                                help="`all`, the window's words, or the named document's path")
+    report_parser.add_argument("--stopped", action="store_true",
+                               help="the audit stopped before checking anything, so no document checks are added")
     report_parser.add_argument("--now", help="the report's date, in ISO 8601; for tests (default: now)")
     for sub in (start_parser, report_parser):
         sub.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
@@ -628,7 +631,7 @@ def main(argv=None):
             return 0
         if args.command == "report":
             lines = report(args.project, args.scope, args.data, args.session, sys.stdin.read(),
-                           parse_now(args.now))
+                           parse_now(args.now), args.stopped)
             print("\n".join(lines))
             return 0
         if args.command == "documents":

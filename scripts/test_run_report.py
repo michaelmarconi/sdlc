@@ -140,6 +140,8 @@ class Write(unittest.TestCase):
         self.assertIn("### Build review\n\n" + report, section)
         self.assertIn("Committed.\nPushed.", text)
         self.assertIn(f"Copied: Build review ({len(report)} characters)", lines)
+        printed = "\n".join(lines)
+        self.assertIn("=== THE REPORT AS WRITTEN ===\n" + text.rstrip("\n") + "\n=== END OF THE REPORT ===", printed)
 
     def test_second_report_same_day_is_numbered(self):
         first, _ = self.write()
