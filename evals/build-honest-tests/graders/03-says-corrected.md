@@ -1,6 +1,6 @@
 ---
 type: llm
-focus: last_message
+focus: trace
 weight: 1
 ---
-The reply says the existing Two words test expected 3, which contradicted the spec's value of 2, and that the build corrected the test to 2.
+In the build's report as written, between `=== THE REPORT AS WRITTEN ===` and `=== END OF THE REPORT ===`, or in the final reply: the build says the existing Two words test expected 3, which contradicted the spec's value of 2, and that it corrected the test to 2.

@@ -1,6 +1,6 @@
 ---
 type: llm
-focus: last_message
+focus: trace
 weight: 1
 ---
-The final reply reminds the person to check the work, for example with /verify, before merging.
+In the build's report as written, between `=== THE REPORT AS WRITTEN ===` and `=== END OF THE REPORT ===`, or in the final reply: the build reminds the person to check the work, for example with /verify, before merging.
