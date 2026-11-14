@@ -28,8 +28,10 @@ Before the `build-correction-checker` starts, it appends the three reports, the 
 and the rubric to read, between fixed `=== ... ===` lines, and approves the start. It refuses the
 start, with a reason Claude sees, when the request has no `Document:` line, when any of the three
 reports of the reviewed commit is missing, when no git repository holds the plan, or when nothing
-has been committed since the reviews, and deletes the record once the checker has run, so the
-corrections are checked only once. A review agent may run in the background, which Claude Code
+has been committed since the reviews, or when the corrections were already checked, so they are
+checked only once. Once the checker has run, its report is kept beside the three reviews, with the
+plan they were of, and `kept_reports` hands all four to hand_over.py for the build's report file
+(docs/adrs/0034). A review agent may run in the background, which Claude Code
 can choose even when the skill asks for the foreground: its PostToolUse event then only says it
 was launched, with its id, so the hook keeps the report from the event with that id that says
 the agent finished: in auto mode its SubagentHandback call's PostToolUse, whose report is final,
@@ -65,7 +67,7 @@ CHECKER = "build-correction-checker"
 # tool: depending on the Claude Code version, /code-review run by the Skill tool either forks or
 # runs inside the session and reports through a tool of its own, so its findings may never reach
 # a hook (issue #79). An agent's report reaches it either way.
-STOPPING = {"build-reviewer": ("plan",), "general-purpose": ("code", "security")}
+STOPPING = {"build-reviewer": ("plan",), "general-purpose": ("code", "security"), CHECKER: ("check",)}
 PARTS = (("code", "CODE REVIEW REPORT"), ("security", "SECURITY REVIEW REPORT"),
          ("plan", "BUILD REVIEW REPORT"))
 
@@ -86,8 +88,8 @@ def head(folder):
     return result.stdout.strip() if result.returncode == 0 else None
 
 
-def record_path(session):
-    data = os.environ.get("CLAUDE_PLUGIN_DATA")
+def record_path(session, data=None):
+    data = data if data is not None else os.environ.get("CLAUDE_PLUGIN_DATA")
     if not data:
         return None
     safe = re.sub(r"[^A-Za-z0-9_-]", "_", session)
@@ -109,9 +111,9 @@ def locked(session):
         yield
 
 
-def load(session):
+def load(session, data=None):
     try:
-        with open(record_path(session), encoding="utf-8") as f:
+        with open(record_path(session, data), encoding="utf-8") as f:
             record = json.load(f)
     except (OSError, TypeError, ValueError):
         return None
@@ -128,12 +130,23 @@ def save(session, record):
     saved_records.prune(os.path.dirname(path))
 
 
-def for_commit(session, commit, folder):
+def for_commit(session, commit, folder, plan):
     record = load(session)
     if not record or record.get("commit") != commit or record.get("repository", folder) != folder:
         record = {"commit": commit, "repository": folder, "reports": {}, "started": {}}
     record.setdefault("started", {})
+    record["plan"] = plan
     return record
+
+
+def kept_reports(data, session, plan, cwd=None):
+    """The reports kept for the session's build of `plan`, {part: text} with parts `code`,
+    `security`, `plan` and `check`, for hand_over.py's report file; None when no record is kept or
+    it is of another plan."""
+    record = load(session, data)
+    if not record or not plan or record.get("plan") != repository.full_path(plan, base=cwd):
+        return None
+    return {part: text for part, text in record["reports"].items() if isinstance(text, str)}
 
 
 def first_lines(prompt):
@@ -175,13 +188,16 @@ def refuse(reason):
                                    "permissionDecisionReason": reason}}
 
 
-def start_checker(session, tool_input, cwd):
+def start_checker(session, tool_input, cwd, call="check"):
     prompt = tool_input.get("prompt") or ""
     named, _ = first_lines(prompt)
     if not named:
         return refuse("Start the build correction checker with `Document: <plan path>` as the "
                       "first line of its request, the same line the build reviewer was given.")
     record = load(session)
+    if record and record.get("checked"):
+        return refuse("The corrections have already been checked once, which is all a build gets. "
+                      "Do not review or check again: stop and show the person the check's report.")
     missing = [title.lower().replace(" report", "") for part, title in PARTS
                if not record or part not in record["reports"]]
     if missing:
@@ -199,6 +215,9 @@ def start_checker(session, tool_input, cwd):
     if current == record["commit"]:
         return refuse("Nothing has been committed since the reviews. Commit the corrections "
                       "first, then start the build correction checker.")
+    with locked(session):
+        record["started"][call] = "check"
+        save(session, record)
     blocks = [f"=== {title} ===\n{record['reports'][part]}\n=== END {title} ==="
               for part, title in PARTS]
     extra = (f"\n\n=== REVIEWED COMMIT ===\nReviewed commit: {record['commit']}\n"
@@ -259,6 +278,21 @@ def agent_stopped(session, event):
     return None
 
 
+def returned(record, call, part, response):
+    """Keep the report an agent's tool result carries, or note its background launch."""
+    agent_id = subagent_report.launched_id(response)
+    if agent_id is None:
+        report = text_of(response)
+        runs(record, "stopped").pop(str(subagent_report.agent_id(response)), None)
+    else:
+        launched, stopped = runs(record, "launched"), runs(record, "stopped")
+        report = stopped.pop(agent_id, None)
+        launched[agent_id] = call  # so a later report of the agent is kept too
+        if not isinstance(report, str):
+            report = ""
+    keep(record, call, part, report)
+
+
 def handle(event):
     session = str(event.get("session_id") or "unknown")
     when = event.get("hook_event_name")
@@ -271,13 +305,17 @@ def handle(event):
     checker = str(tool_input.get("subagent_type") or "").split(":")[-1] == CHECKER
     if tool in ("Agent", "Task") and checker:
         if when == "PreToolUse":
-            return start_checker(session, tool_input, event.get("cwd"))
+            return start_checker(session, tool_input, event.get("cwd"), str(event.get("tool_use_id") or "check"))
         if when == "PostToolUse":
             # One correction check per review: a second would follow a second round of corrections.
+            # The record stays, with the check's report, for the hand-over's report file.
             with locked(session):
-                path = record_path(session)
-                if path and os.path.exists(path):
-                    os.remove(path)
+                record = load(session)
+                if record:
+                    record["checked"] = True
+                    returned(record, str(event.get("tool_use_id") or "check"), "check",
+                             event.get("tool_response"))
+                    save(session, record)
         return None
     if not fresh_session.building(session) or not record_path(session):
         return None
@@ -295,25 +333,15 @@ def handle(event):
             if commit is None and kept and kept.get("commit"):
                 # A review whose plan no repository holds must not wipe the others' reports.
                 folder, commit = kept.get("repository", folder), kept["commit"]
-            record = for_commit(session, commit, folder)
+            named, _ = first_lines(tool_input.get("prompt"))
+            record = for_commit(session, commit, folder, repository.full_path(named, base=event.get("cwd")))
             record["started"][call] = part
             save(session, record)
         elif when == "PostToolUse":
             record = load(session)
             if not record or not isinstance(record.get("started"), dict):
                 return None
-            response = event.get("tool_response")
-            agent_id = subagent_report.launched_id(response)
-            if agent_id is None:
-                report = text_of(response)
-                runs(record, "stopped").pop(str(subagent_report.agent_id(response)), None)
-            else:
-                launched, stopped = runs(record, "launched"), runs(record, "stopped")
-                report = stopped.pop(agent_id, None)
-                launched[agent_id] = call  # so a later report of the agent is kept too
-                if not isinstance(report, str):
-                    report = ""
-            keep(record, call, part, report)
+            returned(record, call, part, event.get("tool_response"))
             save(session, record)
     return None
 

@@ -1,6 +1,7 @@
 """Tests for hand_over.py, run against throwaway git repositories made in each test."""
 
 import io
+import json
 import os
 import stat
 import subprocess
@@ -12,6 +13,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hand_over  # noqa: E402
+import build_relay  # noqa: E402
 import uncommitted  # noqa: E402
 
 PLAN = "docs/plans/2026-11-03-thing.md"
@@ -69,11 +71,18 @@ class Repo(unittest.TestCase):
         self.git("remote", "add", "origin", bare)
         return bare
 
-    def run_it(self, *args):
+    def run_it(self, *args, own=""):
         out = io.StringIO()
-        with redirect_stdout(out):
-            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--message", "Build the thing", *args])
+        self.data = os.path.join(self.tmp.name, "data")
+        with redirect_stdout(out), mock.patch("sys.stdin", io.StringIO(own)):
+            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--message", "Build the thing",
+                                   "--data", self.data, "--session", "s1", "--report", "-", *args])
         return code, out.getvalue()
+
+    def report_file(self, out):
+        line = next(line for line in out.splitlines() if line.startswith("Report written: "))
+        with open(line[len("Report written: "):], encoding="utf-8") as f:
+            return line[len("Report written: "):], f.read()
 
     def subjects(self):
         return self.git("log", "--format=%s").splitlines()
@@ -265,6 +274,71 @@ class Push(Repo):
         self.assertEqual(code, 1)
         self.assertEqual(self.subjects()[0], "Build the thing")
         self.assertIn("push failed", out)
+
+
+class Report(Repo):
+    """The build's report file (ADRs 0033 and 0034)."""
+
+    def keep(self, plan_path, reports):
+        record = {"commit": "abc", "repository": self.dir, "plan": plan_path, "reports": reports, "started": {}}
+        path = build_relay.record_path("s1", os.path.join(self.tmp.name, "data"))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(record, f)
+
+    def test_own_sections_and_script_output_written(self):
+        code, out = self.run_it(own="## What was built\n\nThe thing.\n\n## Choices\n\n- Named it thing.\n")
+        self.assertEqual(code, 0, out)
+        path, text = self.report_file(out)
+        self.assertTrue(path.endswith(f"reports/repo/{TODAY}-build-2026-11-03-thing.md"), path)
+        self.assertIn("## What was built\n\nThe thing.", text)
+        script = text[text.index("## The hand-over script's report"):text.index("## Left for you to check")]
+        self.assertIn("Branch: build/thing", script)
+        self.assertIn("Push: pushed build/thing to origin.", script)
+        self.assertEqual(self.git("status", "--porcelain"), "")
+
+    def test_kept_reviews_copied_word_for_word(self):
+        reports = {"code": '[{"summary": "x"}]', "security": "No issues.\n", "plan": "Result: PASS\n| 1 | pass |",
+                   "check": "Result: PASS"}
+        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), reports)
+        _, out = self.run_it()
+        _, text = self.report_file(out)
+        reviews = text[text.index("## What each review found"):text.index("## The hand-over script's report")]
+        for title, part in (("Code review", "code"), ("Security review", "security"),
+                            ("Build review", "plan"), ("Correction check", "check")):
+            self.assertIn(f"### {title}\n\n{reports[part]}", reviews)
+
+    def test_another_plans_reviews_not_copied(self):
+        self.keep(os.path.realpath(os.path.join(self.dir, "docs/plans/other.md")), {"code": "theirs"})
+        _, out = self.run_it()
+        _, text = self.report_file(out)
+        self.assertNotIn("theirs", text)
+        self.assertIn("No report kept.", text)
+
+    def test_missing_check_says_no_report_kept(self):
+        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "c", "security": "s", "plan": "p"})
+        _, out = self.run_it()
+        _, text = self.report_file(out)
+        self.assertIn("### Correction check\n\nNo report kept.", text)
+
+    def test_refused_hand_over_still_writes_the_file(self):
+        self.git("checkout", "-q", "main")
+        code, out = self.run_it(own="## What was built\n\nNothing: refused.\n")
+        self.assertEqual(code, 2)
+        _, text = self.report_file(out)
+        self.assertIn("Refused:", text)
+
+    def test_unknown_heading_refused_before_any_git_step(self):
+        self.put("work.txt", "new")
+        code, out = self.run_it(own="## My own heading\n\ntext\n")
+        self.assertEqual(code, 2)
+        self.assertIn("My own heading", out)
+        self.assertNotIn("Report written", out)
+        self.assertIn("work.txt", self.git("status", "--porcelain"))
+
+    def test_claude_cannot_write_the_script_report(self):
+        code, out = self.run_it(own="## The hand-over script's report\n\nAll pushed.\n")
+        self.assertEqual(code, 2)
 
 
 class Help(unittest.TestCase):
