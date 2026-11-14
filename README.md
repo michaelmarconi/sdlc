@@ -127,7 +127,8 @@ flowchart LR
   run a skill or ask for one.
 - `/agentic:build` commits to a branch of its own and pushes it. It never commits to the main
   branch, never opens a pull request and never merges: those steps stay with you.
-- Review reports are kept in the plugin's own data folder, outside your repository.
+- Review reports, and the report files `/agentic:build` and `/agentic:audit` end with, are kept in the
+  plugin's own data folder, outside your repository.
 - Nothing else is added, unless you install the plugin with `--scope project`.
 
 ## Update
