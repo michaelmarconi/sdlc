@@ -96,6 +96,16 @@ class Parse(unittest.TestCase):
         with self.assertRaises(run_report.ReportError):
             run_report.parse("build", "stray\n## Choices\n\na\n")
 
+    def test_headings_inside_a_fenced_block_stay_text(self):
+        text = "## Problems with the documents\n\nSet it so:\n\n```\n## Open questions\n\n- None.\n```\n"
+        own = run_report.parse("audit", text)
+        self.assertEqual(own, {"Problems with the documents":
+                               "Set it so:\n\n```\n## Open questions\n\n- None.\n```"})
+
+    def test_heading_after_a_closed_fence_starts_a_section(self):
+        own = run_report.parse("build", "## Choices\n\n~~~\n## x\n~~~\n\n## Tests and lint\n\nOK.\n")
+        self.assertEqual(set(own), {"Choices", "Tests and lint"})
+
     def test_deeper_headings_stay_in_their_section(self):
         own = run_report.parse("build", "## Choices\n\n### One\n\nA.\n")
         self.assertEqual(own, {"Choices": "### One\n\nA."})
@@ -164,6 +174,11 @@ class Write(unittest.TestCase):
             path, lines = run_report.write("build", "p", "/work/repo", "", {}, {}, date="2026-11-14")
         self.assertTrue(any("could not be written" in line for line in lines))
         self.assertTrue(path.startswith(self.tmp.name))
+
+    def test_file_that_cannot_be_written_is_refused(self):
+        with mock.patch("builtins.open", side_effect=OSError(36, "File name too long")):
+            with self.assertRaises(run_report.ReportError):
+                self.write()
 
     def test_unknown_copied_heading_refused(self):
         with self.assertRaises(run_report.ReportError):

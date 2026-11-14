@@ -166,7 +166,7 @@ finding exactly as its agent gave it; you write only your own sections, as Markd
 
 Give your sections to the script on standard input, with `--scope` set to `all`, the window's
 words, or the named document's path, and `--stopped` added when the audit stopped for a reason
-above, so no document checks are added:
+above, so no document checks are added, and `--project` as for the other commands:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" <<'EOF'

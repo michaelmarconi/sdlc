@@ -53,6 +53,7 @@ COPIED_ONLY = {
 }
 NOTHING = "Nothing to report."
 HEADING = re.compile(r"^## (?P<title>.+?)[ \t]*$")
+FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")  # a fenced block's first or last line
 
 
 class ReportError(Exception):
@@ -118,8 +119,12 @@ def parse(kind, text):
         if current is not None:
             sections[current] = "\n".join(lines).strip("\n")
 
+    fence = None
     for line in text.splitlines():
-        match = HEADING.match(line)
+        opening = FENCE.match(line)
+        if opening and (fence is None or opening.group(1).startswith(fence)):
+            fence = opening.group(1)[:3] if fence is None else None
+        match = HEADING.match(line) if fence is None and not opening else None
         if not match:
             if current is None and line.strip():
                 raise ReportError(f"text before the first heading: {line.strip()[:60]!r}")
@@ -170,6 +175,8 @@ def write(kind, name, repository, data, own, copied, date):
             break
         except FileExistsError:
             number += 1
+        except OSError as error:
+            raise ReportError(f"{path} can't be written: {error.strerror or error}")
     lines = [f"Report written: {path}"]
     if fell_back:
         lines.append("The plugin's data folder could not be written, so the report is in a folder only you can open.")

@@ -149,6 +149,17 @@ def kept_reports(data, session, plan, cwd=None):
     return {part: text for part, text in record["reports"].items() if isinstance(text, str)}
 
 
+def clear(data, session):
+    """Forget the session's build record once hand_over.py has copied its reports, so a later
+    build in the same session never shows them as its own."""
+    path = record_path(session, data)
+    try:
+        if path:
+            os.remove(path)
+    except OSError:
+        pass
+
+
 def first_lines(prompt):
     lines = prompt.strip().splitlines() if isinstance(prompt, str) else []
     named = lines[0][len("Document:"):].strip() if lines and lines[0].startswith("Document:") else None
@@ -215,9 +226,13 @@ def start_checker(session, tool_input, cwd, call="check"):
     if current == record["commit"]:
         return refuse("Nothing has been committed since the reviews. Commit the corrections "
                       "first, then start the build correction checker.")
-    with locked(session):
-        record["started"][call] = "check"
-        save(session, record)
+    try:
+        with locked(session):
+            fresh = load(session) or record
+            runs(fresh, "started")[call] = "check"
+            save(session, fresh)
+    except OSError:  # the checker still gets the reports; only its own report goes unkept
+        pass
     blocks = [f"=== {title} ===\n{record['reports'][part]}\n=== END {title} ==="
               for part, title in PARTS]
     extra = (f"\n\n=== REVIEWED COMMIT ===\nReviewed commit: {record['commit']}\n"

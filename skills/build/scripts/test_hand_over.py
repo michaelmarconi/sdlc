@@ -315,6 +315,14 @@ class Report(Repo):
         self.assertNotIn("theirs", text)
         self.assertIn("No report kept.", text)
 
+    def test_kept_reviews_cleared_once_copied(self):
+        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round"})
+        self.run_it()
+        self.put("src/more.py", "print('more')\n")
+        _, out = self.run_it()
+        _, text = self.report_file(out)
+        self.assertNotIn("earlier round", text)
+
     def test_missing_check_says_no_report_kept(self):
         self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "c", "security": "s", "plan": "p"})
         _, out = self.run_it()

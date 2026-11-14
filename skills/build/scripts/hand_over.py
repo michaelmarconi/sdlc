@@ -219,6 +219,7 @@ def main(argv=None):
     name = os.path.splitext(os.path.basename(args.plan))[0]
     try:
         _, report = run_report.write("build", name, repo, args.data, own, copied, date=today())
+        build_relay.clear(args.data, args.session)
     except run_report.ReportError as error:
         report = [f"Report not written: {error}"]
         code = max(code, 1)
