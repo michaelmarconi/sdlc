@@ -14,11 +14,15 @@ can come back to it later?
 
 ## Decision
 
-Chosen: the build and the audit each write their full report to a Markdown file in the plugin's data
-folder[^data], show it as [ADR 0025](0025-document-review-display.md) shows a document, and reply
-with a short note: the outcome, for a build its branch and whether the plan was marked built, any
-question for the person, and the file's full path. The reply is enough to act on, and the repository
-gains nothing.
+Chosen: the build and the audit each end in three steps, so the reply is enough to act on and the
+repository gains nothing:
+
+- they write their full report to a Markdown file in the plugin's data folder[^data], or, where that
+  cannot be written, in a folder only this user can open inside the system's temporary folder, as
+  the plugin's experiment step already does;
+- they show the file as [ADR 0025](0025-document-review-display.md) shows a document;
+- they reply with a short note: the outcome; for a build, its branch and whether the plan's[^plan]
+  status was set to `✅ Built`; any question for the person; and the file's full path.
 
 ## Background
 
@@ -34,14 +38,14 @@ Claude project thread[^thread] it hides the outcome.
 | One long chat reply, as now | Rejected | Hard to skim, keep or share, and hides the outcome in a project thread |
 | A file in the person's repository | Rejected | The plugin writes there only the project's planning documents and working rules |
 | A file in the temporary folder Claude Code gives each conversation | Rejected | Each app names that folder differently, so no skill can state the path |
-| A file in the plugin's data folder, and a short reply | Chosen | One stated place outside the repository, already used for saved review reports |
+| A file in the plugin's data folder, and a short reply | Chosen | One stated place outside the repository, already used by the plugin to save review reports |
 
 ## Consequences
 
 - Good: the person reads the outcome in a few lines.
 - Good: build and audit end the same way.
 - Bad: the folder is deep in the home folder, so the person relies on the viewer or the path.
-- Bad: in a cloud session the file goes with the session's machine.
+- Bad: when Claude Code runs on a remote machine, the file is lost when that machine is discarded.
 
 ## Out of scope
 
@@ -59,22 +63,18 @@ Applies to: how the build and the audit hand their final report to the person.
 
 ## Open questions
 
-### 1. Whether to fall back when the data folder can't be written
-
-The plugin's test runs block that folder, so a report there would fail.
-
-> **Proposed:** fall back to a folder only this user can open, inside the system's temporary folder, as experiments already do.
->
-> **Why:** the build and audit still end with a file, and the tests can run.
+- None.
 
 ## Technical detail
 
 **The folder and name.** `${CLAUDE_PLUGIN_DATA}/reports/<repository>/<date>-build-<plan>.md` for a
 build and `<date>-audit-<scope>.md` for an audit, where `<repository>` is the repository folder's
-name, `<date>` is YYYY-MM-DD, `<plan>` is the plan[^plan] file's name without `.md`, and `<scope>` is
+name, `<date>` is YYYY-MM-DD, `<plan>` is the plan file's name without `.md`, and `<scope>` is
 `all` for every document, the range of commits checked, or the checked document's file name, with
 any character not safe in a file name made a hyphen. A second run on the same day adds `-2`, `-3` and so
-on rather than overwriting.
+on rather than overwriting. The plugin's own test runs block the data folder, so there the file goes
+in `agentic-reports-<user id>` in the system's temporary folder, made so only that user can open it,
+and the reply says so.
 
 **The file.** One heading per item the skill already lists for its report, in that order.
 
