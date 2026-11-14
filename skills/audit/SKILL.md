@@ -138,10 +138,11 @@ reported as drift only once its checker confirms it.
 
 ## Report
 
-However the audit ends, finished or stopped for a reason above, end with a report file. The plugin
-copies every agent's report into it word for word, so the person can read each finding exactly as
-its agent gave it; you write only your own sections, as Markdown under these `##` headings, in
-this order, leaving out any you have nothing for:
+However the audit ends once its first agent has started, finished or stopped for a reason above,
+end with a report file; an audit that stops before then writes none, and its reply gives the
+reason. The plugin copies every agent's report into it word for word, so the person can read each
+finding exactly as its agent gave it; you write only your own sections, as Markdown under these
+`##` headings, in this order, leaving out any you have nothing for:
 
 1. `## Documents checked`: for a full audit or a named document, the documents audited. For a
    window, the picker's report is added for you.

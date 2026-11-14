@@ -140,7 +140,7 @@ give the window.
 
 If Claude Code doesn't let it run the script, as can happen in a routine whose permissions don't
 allow it, the run stops and says so, since without the script it can't tell which documents to
-check.
+check. In each of these cases it writes no report file: its reply says why.
 
 When there is nothing to check, it says so: no lifecycle documents at all, none accepted, or no
 changes in the window. The document checks still run in the last two cases.
