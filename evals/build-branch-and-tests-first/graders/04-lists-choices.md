@@ -1,6 +1,7 @@
 ---
-type: llm
-focus: trace
+type: regex
+target: trace
+pattern: '=== THE REPORT AS WRITTEN ===[\s\S]*## Choices(?:\\n|\n)(?:\\n|\n)- [\s\S]*=== END OF THE REPORT ==='
 weight: 1
 ---
-In the build's report as written, between `=== THE REPORT AS WRITTEN ===` and `=== END OF THE REPORT ===`, or in the final reply: the build lists the choices it made itself, such as names or how the code is split up, each with a reason, or says it made none.
+The build's report file lists the choices the build made itself, as a list under Choices.

@@ -1,6 +1,8 @@
 ---
-type: llm
-focus: trace
+type: regex
+target: trace
+pattern: '=== THE REPORT AS WRITTEN ===(?=(?:(?!=== END OF THE REPORT ===)[\s\S])*unittest)(?=(?:(?!=== END OF THE REPORT ===)[\s\S])*(?:[Nn]o practices?|[Nn]o (?:test )?command|not recorded|isn''t recorded|nothing record|[Ww]orked (?:it |this |them )?out))'
 weight: 1
 ---
-In the build's report as written, between `=== THE REPORT AS WRITTEN ===` and `=== END OF THE REPORT ===`, or in the final reply: the build says how it ran the tests and that it worked this out itself because no practice recorded it.
+The build's report file says how the build ran the tests, and that it worked this out itself
+because no practice recorded it.

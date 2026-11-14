@@ -1,6 +1,7 @@
 ---
-type: llm
-focus: trace
+type: regex
+target: trace
+pattern: '## Left for you to check(?:\\n|\n)(?:(?!(?:\\n|\n)## )[\s\S])*?(?:/verify|[Vv]erify)[\s\S]*=== END OF THE REPORT ==='
 weight: 1
 ---
-In the build's report as written, between `=== THE REPORT AS WRITTEN ===` and `=== END OF THE REPORT ===`, or in the final reply: the build reminds the person to check the work, for example with /verify, before merging.
+The build's report file reminds the person to check the work, for example with /verify, before merging.

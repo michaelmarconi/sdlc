@@ -36,8 +36,9 @@ can choose even when the skill asks for the foreground: its PostToolUse event th
 was launched, with its id, so the hook keeps the report from the event with that id that says
 the agent finished: in auto mode its SubagentHandback call's PostToolUse, whose report is final,
 and otherwise SubagentStop (see subagent_report.py). It holds a report that arrives first until the launch is seen. Records live in
-$CLAUDE_PLUGIN_DATA/builds/<session>.json and are deleted once unchanged for 30 days (see
-saved_records.py), not when the session ends, since a resumed session carries on. Anything else,
+$CLAUDE_PLUGIN_DATA/builds/<session>.json and are deleted once hand_over.py has copied their
+reports into the build's report file, or once unchanged for 30 days (see saved_records.py), not
+when the session ends, since a resumed session carries on. Anything else,
 and any input it cannot read, is left alone.
 """
 
