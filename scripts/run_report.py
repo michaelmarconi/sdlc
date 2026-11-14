@@ -45,7 +45,7 @@ HEADINGS = {
 # Headings only a script fills: Claude's text under one is refused.
 COPIED_ONLY = {
     "build": {"The hand-over script's report"},
-    "audit": {"Problems with the documents"},
+    "audit": set(),
 }
 NOTHING = "Nothing to report."
 HEADING = re.compile(r"^## (?P<title>.+?)[ \t]*$")

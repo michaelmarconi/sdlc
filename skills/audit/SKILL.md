@@ -25,7 +25,12 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" <command> ...
 - `window <words>` lists a window's commits and the files they changed, and writes nothing. Run
   it before anything else when the person gives a window.
 
-Each prints JSON. If a command exits with 1, or Claude Code doesn't let it run, as in a routine
+- `start` clears what the plugin kept of an earlier audit's agents in this session. Run it first
+  in every audit, before any agent starts:
+  `python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" start --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}"`.
+- `report` writes the report file, as Report says.
+
+`documents` and `window` print JSON. If a command exits with 1, or Claude Code doesn't let it run, as in a routine
 whose permissions don't allow it, stop and give the person the reason: without the script you
 can't tell which documents to check. Never work its checks out yourself instead.
 
@@ -133,24 +138,44 @@ reported as drift only once its checker confirms it.
 
 ## Report
 
-Give the findings in this order, grouped by document within each part, leaving out a part with
-nothing in it and numbering the parts you give from 1:
+However the audit ends, finished or stopped for a reason above, end with a report file. The plugin
+copies every agent's report into it word for word, so the person can read each finding exactly as
+its agent gave it; you write only your own sections, as Markdown under these `##` headings, in
+this order, leaving out any you have nothing for:
 
-1. **Documents not checked:** each document whose auditor or checker reported an `Error:`, or the
+1. `## Documents checked`: for a full audit or a named document, the documents audited. For a
+   window, the picker's report is added for you.
+2. `## Documents not checked`: each document whose auditor or checker reported an `Error:`, or the
    brief checker could not read, and the brief itself if the brief checker reported an `Error:`, with
    the error, saying the audit is not complete until it is run again where the document can be
-   read.
-2. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision
-   and of the code, with its file and line, as the report gave them.
-3. **Contradicts the brief:** each confirmed contradiction, with the quotes of the document and of
-   the brief, as the brief checker gave them. Only the person decides which side moves.
-4. **Problems with the documents:** each problem `documents` reported, with its document.
-5. **Not built yet:** for each spec, how many requirements were not found, and their names.
-6. **ADR checks that need a run:** each, with what to run.
-7. **Documents to consider deleting:** the `✅ Built` plans and finished spike records. Nothing
+   read. If the audit stopped, say why here.
+3. `## Drift`: each confirmed finding, named by its document and the auditor's number for it, with
+   its suggested correction. The auditors' and checkers' reports, with their quotes, are added
+   under it for you, so do not repeat the quotes.
+4. `## Contradicts the brief`: each confirmed contradiction, named the same way, with its suggested
+   correction. Only the person decides which side moves.
+5. `## Problems with the documents`: the edit that corrects each problem; the problems `documents`
+   found are added for you.
+6. `## Not built yet`: for each spec, how many requirements were not found, and their names.
+7. `## ADR checks that need a run`: each, with what to run.
+8. `## Documents to consider deleting`: the `✅ Built` plans and finished spike records. Nothing
    refers to either, so deleting one leaves no other document wrong.
-8. **Unfinished spike records:** each `📝 Draft` or `🟢 Ready to run` one, with its date.
-9. **Rejected findings:** each, briefly, with the checker's reason.
+9. `## Unfinished spike records`: each `📝 Draft` or `🟢 Ready to run` one, with its date.
+10. `## Rejected findings`: each, briefly, with the checker's reason.
+
+Give your sections to the script on standard input, with `--scope` set to `all`, the window's
+words, or the named document's path:
+
+```
+python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" <<'EOF'
+## Drift
+
+...
+EOF
+```
+
+It prints the file's path first. If it refuses a heading, correct your sections and run it again.
+Never write or edit the file yourself.
 
 Name a suggested correction, and the skill that makes it, for each drift finding, each
 contradiction and each problem:
@@ -164,11 +189,13 @@ contradiction and each problem:
   person's intent for the product has changed;
 - for a problem with a document, the edit that corrects it.
 
+End with a reply of a few lines: the outcome, any question for the person and the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report into the reply.
+
 Make none of them. The audit writes, edits and deletes nothing in the repository, sets no status
 and makes no commit, so the person chooses every correction. If they then ask for one, such as
 deleting a plan it listed, that is a new request.
 
-Once you have reported, look in the project's practices, in `AGENTS.md`, `CLAUDE.md` and any files
+Once you have replied, look in the project's practices, in `AGENTS.md`, `CLAUDE.md` and any files
 under `docs/practices/`, for what to do with an audit's findings, such as filing each as an issue
 or posting a summary, and do it. That is not a correction: the person asked for it when they
 recorded the practice, and it changes nothing in the repository.
