@@ -178,7 +178,8 @@ question for you, and the file's full path. The app shows you the file where it 
 holds Claude's sections, such as each finding with its suggested correction, and every agent's
 report copied in word for word by the audit's script, so you read each finding exactly as its agent
 gave it, quotes included. It is kept in the plugin's own data folder, outside your repository, at
-`reports/<repository>/<date>-audit-<scope>.md`, until you delete it. For a routine, the reply is in
+`reports/<repository>/<date>-audit-<scope>.md`, until you delete it; where that folder can't be
+written, it goes in a private folder in your system's temporary folder instead. For a routine, the reply is in
 the routine's own session.
 
 `/audit` changes nothing in your repository: no file, no status, no commit, just as Spec Kit's analysis step only
